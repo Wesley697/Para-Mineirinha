@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Para a Minha Mineirinha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#050510;color:#e8e0f0;font-family:'Inter',sans-serif;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#050510}
+::-webkit-scrollbar-thumb{background:linear-gradient(#ff6b9b,#ffd700);border-radius:3px}
+
+/* STARFIELD */
+#starfield{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.star{position:absolute;background:#fff;border-radius:50%}
+
+/* PUZZLE SCREENS */
+.puzzle-screen{position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;transition:opacity 0.8s,transform 0.8s}
+.puzzle-screen.hidden{opacity:0;transform:scale(0.95);pointer-events:none}
+
+#puzzle1{background:radial-gradient(ellipse at center,#0a0a2e 0%,#050510 70%)}
+#puzzle2{background:radial-gradient(ellipse at center,#1a0a3e 0%,#050510 70%)}
+
+.puzzle-icon{font-size:3rem;margin-bottom:1.5rem;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+.puzzle-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin-bottom:0.5rem;background:linear-gradient(135deg,#ffd700,#ff6b9b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.puzzle-subtitle{font-size:0.9rem;color:#a0a0c0;margin-bottom:2rem;font-style:italic;line-height:1.5}
+
+.puzzle-input{background:rgba(255,255,255,0.06);border:1px solid rgba(255,107,155,0.3);border-radius:12px;padding:1rem 1.2rem;font-size:1rem;color:#e8e0f0;width:100%;max-width:320px;text-align:center;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.3s,box-shadow 0.3s}
+.puzzle-input:focus{border-color:#ff6b9b;box-shadow:0 0 20px rgba(255,107,155,0.15)}
+.puzzle-input::placeholder{color:#6a6a8a}
+
+.puzzle-btn{margin-top:1.2rem;background:linear-gradient(135deg,#ff6b9b,#c44dff);border:none;color:#fff;padding:0.8rem 2.5rem;border-radius:30px;font-size:0.95rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;transition:transform 0.2s,box-shadow 0.3s;letter-spacing:0.5px}
+.puzzle-btn:hover{transform:scale(1.05);box-shadow:0 4px 25px rgba(255,107,155,0.4)}
+.puzzle-btn:active{transform:scale(0.97)}
+
+.puzzle-hint{color:#ff6b9b;font-size:0.8rem;margin-top:1rem;opacity:0;transition:opacity 0.5s}
+.puzzle-hint.show{opacity:1}
+
+.puzzle-attempts{color:#6a6a8a;font-size:0.75rem;margin-top:0.5rem}
+
+/* BLACK HOLE ANIMATION */
+.blackhole-container{position:relative;width:200px;height:200px;margin:0 auto 2rem}
+.blackhole-ring{position:absolute;border-radius:50%;border:1px solid rgba(255,107,155,0.3);animation:bhspin 8s linear infinite}
+.bh1{width:200px;height:200px;top:0;left:0}
+.bh2{width:160px;height:160px;top:20px;left:20px;border-color:rgba(196,77,255,0.3);animation-duration:6s;animation-direction:reverse}
+.bh3{width:120px;height:120px;top:40px;left:40px;border-color:rgba(255,215,0,0.2);animation-duration:4s}
+.bh-core{position:absolute;width:60px;height:60px;top:70px;left:70px;border-radius:50%;background:radial-gradient(circle,#1a0a3e,#050510);box-shadow:0 0 40px rgba(196,77,255,0.3)}
+@keyframes bhspin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* MAIN CONTENT */
+#main-content{position:relative;z-index:1;opacity:0;transition:opacity 1.5s}
+#main-content.visible{opacity:1}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;position:relative}
+.hero-pretitle{font-size:0.85rem;letter-spacing:4px;text-transform:uppercase;color:#a0a0c0;margin-bottom:1rem;opacity:0;animation:fadeUp 1s 0.5s forwards}
+.hero-title{font-family:'Dancing Script',cursive;font-size:3.2rem;font-weight:700;background:linear-gradient(135deg,#ffd700 0%,#ff6b9b 50%,#c44dff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:1rem;opacity:0;animation:fadeUp 1s 0.8s forwards;line-height:1.3}
+.hero-heart{font-size:2rem;opacity:0;animation:fadeUp 1s 1.2s forwards,heartbeat 1.5s 2s infinite}
+@keyframes heartbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* COUNTER */
+.counter-section{padding:3rem 1.5rem;text-align:center}
+.counter-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,107,155,0.15);border-radius:20px;padding:2rem;max-width:360px;margin:0 auto}
+.counter-label{font-size:0.8rem;color:#a0a0c0;letter-spacing:2px;text-transform:uppercase;margin-bottom:0.8rem}
+.counter-value{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:700;color:#ffd700}
+.counter-sub{font-size:0.85rem;color:#ff6b9b;margin-top:0.5rem;font-style:italic}
+.counter-details{display:flex;justify-content:center;gap:1.5rem;margin-top:1.5rem}
+.counter-item{text-align:center}
+.counter-num{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:#e8e0f0}
+.counter-unit{font-size:0.7rem;color:#a0a0c0;text-transform:uppercase;letter-spacing:1px}
+
+/* SECTION TITLES */
+.section-title{font-family:'Playfair Display',serif;font-size:1.8rem;text-align:center;margin-bottom:0.5rem;background:linear-gradient(135deg,#ffd700,#ff6b9b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.section-subtitle{text-align:center;color:#a0a0c0;font-size:0.85rem;margin-bottom:2.5rem;font-style:italic}
+.section-divider{width:60px;height:2px;background:linear-gradient(to right,#ff6b9b,#ffd700);margin:0 auto 2.5rem;border-radius:2px}
+
+/* REASONS SECTION */
+.reasons-section{padding:4rem 1.5rem}
+.reason-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,107,155,0.1);border-radius:16px;padding:1.5rem;margin-bottom:1.2rem;max-width:400px;margin-left:auto;margin-right:auto;transition:transform 0.3s,border-color 0.3s}
+.reason-card:hover{transform:translateY(-2px);border-color:rgba(255,107,155,0.3)}
+.reason-emoji{font-size:1.5rem;margin-bottom:0.5rem}
+.reason-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:#ffd700;margin-bottom:0.5rem}
+.reason-text{font-size:0.88rem;color:#c0c0e0;line-height:1.7}
+
+/* GALLERY */
+.gallery-section{padding:4rem 1rem}
+.gallery-grid{display:grid;gap:1rem;max-width:500px;margin:0 auto}
+.gallery-item{position:relative;border-radius:14px;overflow:hidden;cursor:pointer;transition:transform 0.3s}
+.gallery-item:hover{transform:scale(1.02)}
+.gallery-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s}
+.gallery-item:hover img{transform:scale(1.05)}
+.gallery-caption{position:absolute;bottom:0;left:0;right:0;padding:1rem;background:linear-gradient(transparent,rgba(5,5,16,0.9));font-size:0.8rem;color:#e8e0f0;opacity:0;transition:opacity 0.3s}
+.gallery-item:hover .gallery-caption{opacity:1}
+.gallery-item.large{grid-column:span 2}
+.gallery-item.tall{grid-row:span 2}
+
+/* VIDEO SECTION */
+.video-section{padding:4rem 1.5rem;text-align:center}
+.video-container{max-width:400px;margin:0 auto;border-radius:16px;overflow:hidden;border:1px solid rgba(255,107,155,0.2);box-shadow:0 0 40px rgba(255,107,155,0.1)}
+.video-container video{width:100%;display:block}
+
+/* BLACK HOLE MESSAGE */
+.blackhole-section{padding:5rem 1.5rem;text-align:center;position:relative;overflow:hidden}
+.blackhole-section::before{content:'';position:absolute;top:50%;left:50%;width:400px;height:400px;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(196,77,255,0.08) 0%,transparent 70%);border-radius:50%;pointer-events:none}
+.bh-message{max-width:400px;margin:0 auto;font-family:'Playfair Display',serif;font-size:1rem;line-height:2;color:#c0c0e0;font-style:italic;position:relative;z-index:1}
+.bh-message .highlight{color:#ff6b9b;font-weight:700;font-style:normal}
+.bh-message .gold{color:#ffd700;font-weight:700;font-style:normal}
+
+/* LOVE LETTER */
+.letter-section{padding:5rem 1.5rem}
+.letter-container{max-width:400px;margin:0 auto;background:rgba(255,255,255,0.02);border:1px solid rgba(255,215,0,0.15);border-radius:20px;padding:2rem;position:relative}
+.letter-container::before{content:'"';position:absolute;top:10px;left:15px;font-family:'Playfair Display',serif;font-size:4rem;color:rgba(255,215,0,0.15);line-height:1}
+.letter-text{font-size:0.92rem;line-height:2;color:#d0d0e8;padding-top:1.5rem}
+.letter-signature{font-family:'Dancing Script',cursive;font-size:1.4rem;color:#ffd700;text-align:right;margin-top:1.5rem}
+.letter-ps{font-size:0.8rem;color:#ff6b9b;font-style:italic;margin-top:1rem;text-align:right}
+
+/* FINAL */
+.final-section{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3rem 1.5rem}
+.final-title{font-family:'Dancing Script',cursive;font-size:2.5rem;background:linear-gradient(135deg,#ffd700,#ff6b9b,#c44dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:1rem;line-height:1.4}
+.final-name{font-family:'Playfair Display',serif;font-size:2rem;color:#ffd700;margin-bottom:2rem}
+.final-from{font-size:0.9rem;color:#a0a0c0}
+.final-from span{color:#ff6b9b;font-weight:600}
+
+/* FLOATING HEARTS */
+.floating-heart{position:fixed;color:#ff6b9b;font-size:1.2rem;opacity:0;z-index:50;pointer-events:none;animation:floatHeart 4s ease-in forwards}
+@keyframes floatHeart{0%{opacity:0;transform:translateY(0) scale(0.5)}10%{opacity:0.8}90%{opacity:0.3}100%{opacity:0;transform:translateY(-100vh) scale(1) rotate(20deg)}}
+
+/* SCROLL REVEAL */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity 0.8s,transform 0.8s}
+.reveal.active{opacity:1;transform:translateY(0)}
+
+/* LIGHTBOX */
+#lightbox{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(5,5,16,0.95);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem;cursor:pointer}
+#lightbox.open{display:flex}
+#lightbox img{max-width:100%;max-height:90vh;border-radius:12px;object-fit:contain}
+#lightbox-close{position:absolute;top:1rem;right:1rem;color:#fff;font-size:1.5rem;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border-radius:50%;border:none}
+
+/* PROGRESS BAR */
+#progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(to right,#ff6b9b,#ffd700,#c44dff);z-index:300;transition:width 0.1s;width:0}
+</style>
+</head>
+<body>
+
+<!-- STARFIELD -->
+<div id="starfield"></div>
+
+<!-- PROGRESS BAR -->
+<div id="progress"></div>
+
+<!-- PUZZLE 1 -->
+<div class="puzzle-screen" id="puzzle1">
+  <div class="puzzle-icon">&#127775;</div>
+  <div class="puzzle-title">Antes de entrar...</div>
+  <div class="puzzle-subtitle">Só quem sabe a resposta<br>pode abrir este universo.</div>
+  <p style="font-family:'Playfair Display',serif;font-size:1.15rem;color:#e8e0f0;margin-bottom:1.5rem;line-height:1.6">Onde foi o nosso primeiro beijo?</p>
+  <input type="text" class="puzzle-input" id="answer1" placeholder="Escreve aqui..." autocomplete="off">
+  <button class="puzzle-btn" id="btn1">Desbloquear &#10024;</button>
+  <div class="puzzle-hint" id="hint1">Hmm, não foi bem aí... Tenta outra vez, amor.</div>
+  <div class="puzzle-attempts" id="attempts1"></div>
+</div>
+
+<!-- PUZZLE 2 -->
+<div class="puzzle-screen hidden" id="puzzle2" style="z-index:99">
+  <div class="blackhole-container">
+    <div class="blackhole-ring bh1"></div>
+    <div class="blackhole-ring bh2"></div>
+    <div class="blackhole-ring bh3"></div>
+    <div class="bh-core"></div>
+  </div>
+  <div class="puzzle-title">Quase lá...</div>
+  <div class="puzzle-subtitle">O Wesley disse que cruzou o teu horizonte de eventos.<br>O que isso significa para ele?</div>
+  <p style="font-family:'Playfair Display',serif;font-size:1.05rem;color:#e8e0f0;margin-bottom:1.5rem;line-height:1.6">Completa: "Agora não tem mais ___"</p>
+  <input type="text" class="puzzle-input" id="answer2" placeholder="Uma palavra..." autocomplete="off">
+  <button class="puzzle-btn" id="btn2">Entrar no nosso universo &#128156;</button>
+  <div class="puzzle-hint" id="hint2">Quase! Pensa no que ele te disse sobre o buraco negro...</div>
+  <div class="puzzle-attempts" id="attempts2"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main-content">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-pretitle">um universo só nosso</div>
+    <h1 class="hero-title">Para a Minha<br>Mineirinha</h1>
+    <div class="hero-heart">&#128156;</div>
+  </section>
+
+  <!-- COUNTER -->
+  <section class="counter-section reveal">
+    <div class="counter-box">
+      <div class="counter-label">Desde o nosso primeiro beijo</div>
+      <div class="counter-label" style="color:#ff6b9b;letter-spacing:0;text-transform:none;font-style:italic;margin-bottom:1rem">26 de maio de 2026 &#183; Sala LED</div>
+      <div id="counter-display">
+        <div class="counter-details">
+          <div class="counter-item">
+            <div class="counter-num" id="c-days">0</div>
+            <div class="counter-unit">dias</div>
+          </div>
+          <div class="counter-item">
+            <div class="counter-num" id="c-hours">0</div>
+            <div class="counter-unit">horas</div>
+          </div>
+          <div class="counter-item">
+            <div class="counter-num" id="c-mins">0</div>
+            <div class="counter-unit">minutos</div>
+          </div>
+          <div class="counter-item">
+            <div class="counter-num" id="c-secs">0</div>
+            <div class="counter-unit">segundos</div>
+          </div>
+        </div>
+      </div>
+      <div class="counter-sub">...e cada segundo vale a pena.</div>
+    </div>
+  </section>
+
+  <!-- REASONS -->
+  <section class="reasons-section">
+    <div class="reveal">
+      <h2 class="section-title">Porquê tu?</h2>
+      <p class="section-subtitle">Porque tudo em ti me faz ter certeza.</p>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="reason-card reveal">
+      <div class="reason-emoji">&#128274;</div>
+      <div class="reason-title">A tua confiança</div>
+      <div class="reason-text">Quando a gente ainda mal se conhecia, tu sentiste algo e confiaste em mim com coisas que são só tuas. Isso é a coisa mais bonita que alguém já me deu. Eu guardo isso com tudo que tenho.</div>
+    </div>
+
+    <div class="reason-card reveal">
+      <div class="reason-emoji">&#128557;</div>
+      <div class="reason-title">A forma como te preocupas</div>
+      <div class="reason-text">Hoje fui apresentar a minha PAP e correu super bem. E tu estavas lá. E no fim... choraste. CHORASTE, Madalena. Porque eu fui bem. Que mulher incrível és tu, que chora de felicidade pelo sucesso dos outros. Eu nunca vou esquecer isso.</div>
+    </div>
+
+    <div class="reason-card reveal">
+      <div class="reason-emoji">&#127793;</div>
+      <div class="reason-title">Entendes-me em tudo</div>
+      <div class="reason-text">Tu és atenciosa de uma forma que eu nem sabia que precisava. Me apoias em tudo, me entendes quando nem eu me entendo. É como se tivesses um manual secreto sobre mim que nem eu tenho.</div>
+    </div>
+
+    <div class="reason-card reveal">
+      <div class="reason-emoji">&#127758;</div>
+      <div class="reason-title">A minha mineirinha</div>
+      <div class="reason-text">Tu és portuguesa mas pegas tanta coisa minha que já és metade brasileira. A minha mineirinha de Portugal. Isso faz-me rir e faz-me apaixonar ao mesmo tempo.</div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="gallery-section">
+    <div class="reveal">
+      <h2 class="section-title">O Nosso Universo</h2>
+      <p class="section-subtitle">Cada foto, uma estrela no nosso céu.</p>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="gallery-grid reveal" style="grid-template-columns:1fr 1fr">
+
+      <div class="gallery-item large" onclick="openLightbox(this)">
+        <img src="images/praia2_areia.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">Na areia, com o mar e contigo. Perfeito.</div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="images/praia_close.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">A primeira vez na praia juntos.</div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="images/praia2_sorriso.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">Esse sorriso... eu morro.</div>
+      </div>
+
+      <div class="gallery-item large" onclick="openLightbox(this)">
+        <img src="images/varzea.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">Dormindo na várzea. O meu lugar favorito: contigo.</div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="images/praia2_biquinho.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">Os biquinhos na praia. &#128536;</div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="images/paragens.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">Abraçados perto das paragens.</div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="images/santa_lingua.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">Voltando da Santa. Os malucos.</div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="images/santa_lingua2.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">Língua de fora e flores vermelhas.</div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="images/santa_biquinho.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">A minha princesa com a flor.</div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="images/flores.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">Flores que apanhei para ti.</div>
+      </div>
+
+      <div class="gallery-item large" onclick="openLightbox(this)">
+        <img src="images/castelo_muros.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">Explorando o Castelo de Óbidos juntos.</div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="images/jantar_madalena.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">O nosso jantar no castelo. Linda demais.</div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="images/jantar_pratos.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">O jantar que comemos juntos em Óbidos.</div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(this)">
+        <img src="images/autocarro.jpg" alt="" loading="lazy">
+        <div class="gallery-caption">A caminho da praia. Eu no teu colo.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- VIDEO -->
+  <section class="video-section">
+    <div class="reveal">
+      <h2 class="section-title">Nós em Movimento</h2>
+      <p class="section-subtitle">Caretas, beijinhos e declarações na praia.</p>
+      <div class="section-divider"></div>
+    </div>
+    <div class="video-container reveal">
+      <video controls playsinline preload="metadata" poster="images/praia2_sorriso.jpg">
+        <source src="video/nos_na_praia.mp4" type="video/mp4">
+      </video>
+    </div>
+  </section>
+
+  <!-- BLACK HOLE MESSAGE -->
+  <section class="blackhole-section">
+    <div class="reveal">
+      <h2 class="section-title">O Horizonte de Eventos</h2>
+      <p class="section-subtitle">A mensagem que te enviei quando tudo ficou claro.</p>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="bh-message reveal">
+      <p>Vejo uma mulher incrível, intacta por fora, <span class="highlight">uma muralha</span>, difícil de alcançar por completo, mas que conhecê-la além da sua armadura é <span class="gold">a coisa mais bela que poderia existir neste universo</span>.</p>
+      <br>
+      <p>No universo temos uma coisa chamada <span class="highlight">buraco negro</span> — um objeto no espaço onde a gravidade é tão forte, mas tão forte, que nada pode escapar dela. Nem sequer a luz, que viaja a 1,08 mil milhões de km/h e dá 7 voltas e meia à Terra num único segundo.</p>
+      <br>
+      <p>O buraco negro tem um <span class="gold">horizonte de eventos</span> — um limite. Se o cruzas, nada consegue ter velocidade para sair mais dele.</p>
+      <br>
+      <p>A minha comparação é que quando eu comecei a me envolver contigo e a gente se entrelaçou, eu senti exatamente como <span class="highlight">cruzar o horizonte de eventos</span>.</p>
+      <br>
+      <p>Eu senti que <span class="gold">jamais poderia sair de nós novamente</span>, porque a tua atração é tão bela, tão forte, tão incrível, que nada que me tentasse tirar dela resultaria.</p>
+      <br>
+      <p style="color:#ff6b9b">E isso foi a melhor coisa que me aconteceu de verdade, amor. Eu te amo demais. &#128156;</p>
+      <br>
+      <p style="font-size:0.8rem;color:#a0a0c0">(sim, sou um papão nerd e não vou pedir desculpa por isso &#128536;)</p>
+    </div>
+  </section>
+
+  <!-- LOVE LETTER -->
+  <section class="letter-section">
+    <div class="reveal">
+      <h2 class="section-title">Do Meu Coração</h2>
+      <p class="section-subtitle">Para a mulher mais incrível do mundo.</p>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="letter-container reveal">
+      <div class="letter-text">
+        <p>Amor, quero que todos os dias da tua vida te sintas <strong style="color:#ffd700">a mulher mais incrível do mundo</strong>, a mulher mais amada do mundo, porque tu és, amor. Tudo isso.</p>
+        <br>
+        <p>Enquanto eu existir, vais ter sempre uma pessoa com muito orgulho de tudo que fazes. Vais ter sempre um ombro amigo, um escape quando tudo der errado. Porque se tiver que ser <strong style="color:#ff6b9b">eu e tu contra o mundo</strong>, assim será.</p>
+        <br>
+        <p>Eu encontrei-te, amor. No meio de toda essa podridão do mundo. E agora <strong style="color:#ffd700">nunca mais vou soltar a tua mão</strong>.</p>
+        <br>
+        <p>Tu fazes a minha vida ser incrível e mais leve. Obrigado por tudo: todo o amor, todo o cuidado e apoio.</p>
+        <br>
+        <p>Tu és o meu tudo. A melhor parte do meu dia. A minha cura. A minha felicidade. <strong style="color:#ff6b9b">A melhor coisa do mundo é poder amar-te.</strong></p>
+        <br>
+        <p>Eu sinto muito por não ter chegado à tua vida antes de te terem magoado. Mas eu vou sempre dar o meu máximo para que um dia <strong style="color:#ffd700">nem te lembres que já te magoaram</strong>. Isso eu vou, amor.</p>
+        <br>
+        <p>Tu és a minha princesa. A minha garotinha. A minha mineirinha.</p>
+      </div>
+      <div class="letter-signature">Wesley &#128156;</div>
+      <div class="letter-ps">P.S.: Assinado, o amor da tua vida kkkkk</div>
+    </div>
+  </section>
+
+  <!-- FINAL -->
+  <section class="final-section">
+    <div class="reveal">
+      <div class="final-title">EU TE AMO MAIS QUE<br>TUDO NESTE MUNDO</div>
+      <div class="final-name">Madalena &#10024;</div>
+      <div class="final-from">Com todo o amor do universo,<br><span>o teu Wesley</span></div>
+      <br><br>
+      <p style="font-size:0.75rem;color:#6a6a8a">26 de junho de 2026 &#183; 1 mês juntos &#128156;</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">&times;</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+// STARFIELD
+(function(){
+  var sf=document.getElementById('starfield');
+  for(var i=0;i<120;i++){
+    var s=document.createElement('div');
+    s.className='star';
+    var size=Math.random()*2.5+0.5;
+    s.style.cssText='width:'+size+'px;height:'+size+'px;top:'+Math.random()*100+'%;left:'+Math.random()*100+'%;opacity:'+(Math.random()*0.7+0.3)+';animation:twinkle '+(Math.random()*4+2)+'s ease-in-out infinite '+Math.random()*4+'s';
+    sf.appendChild(s);
+  }
+  var style=document.createElement('style');
+  style.textContent='@keyframes twinkle{0%,100%{opacity:0.3}50%{opacity:1}}';
+  document.head.appendChild(style);
+})();
+
+// PUZZLE LOGIC
+var attempts1=0,attempts2=0;
+
+function normalize(s){
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,'').trim();
+}
+
+document.getElementById('btn1').addEventListener('click',function(){
+  var a=normalize(document.getElementById('answer1').value);
+  var valid=['sala led','na sala led','sala led da escola','na sala led da escola','na sala led da nossa escola','sala led da nossa escola'];
+  var match=false;
+  for(var i=0;i<valid.length;i++){if(a===valid[i]||a.indexOf('sala led')!==-1){match=true;break;}}
+  if(match){
+    document.getElementById('puzzle1').classList.add('hidden');
+    setTimeout(function(){
+      document.getElementById('puzzle2').classList.remove('hidden');
+      document.getElementById('puzzle2').style.zIndex='100';
+    },400);
+  } else {
+    attempts1++;
+    document.getElementById('hint1').classList.add('show');
+    if(attempts1>=3){document.getElementById('attempts1').textContent='Dica: foi num sítio da nossa escola com luzes...';}
+    document.getElementById('answer1').style.borderColor='#ff4444';
+    setTimeout(function(){document.getElementById('answer1').style.borderColor='';},1500);
+  }
+});
+
+document.getElementById('btn2').addEventListener('click',function(){
+  var a=normalize(document.getElementById('answer2').value);
+  var valid=['volta','voltar','sem volta','nao tem volta','nao tem mais volta'];
+  var match=false;
+  for(var i=0;i<valid.length;i++){if(a===valid[i]||a.indexOf('volta')!==-1){match=true;break;}}
+  if(match){
+    document.getElementById('puzzle2').classList.add('hidden');
+    setTimeout(function(){
+      document.getElementById('main-content').classList.add('visible');
+      startCounter();
+      spawnHearts();
+    },600);
+  } else {
+    attempts2++;
+    document.getElementById('hint2').classList.add('show');
+    if(attempts2>=3){document.getElementById('attempts2').textContent='Dica: pensa no que já não pode acontecer depois de cruzar...';}
+    document.getElementById('answer2').style.borderColor='#ff4444';
+    setTimeout(function(){document.getElementById('answer2').style.borderColor='';},1500);
+  }
+});
+
+// Enter key support
+document.getElementById('answer1').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('btn1').click();});
+document.getElementById('answer2').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('btn2').click();});
+
+// COUNTER
+function startCounter(){
+  var start=new Date(2026,4,26);
+  function update(){
+    var now=new Date();
+    var diff=now-start;
+    var days=Math.floor(diff/86400000);
+    var hours=Math.floor((diff%86400000)/3600000);
+    var mins=Math.floor((diff%3600000)/60000);
+    var secs=Math.floor((diff%60000)/1000);
+    document.getElementById('c-days').textContent=days;
+    document.getElementById('c-hours').textContent=hours;
+    document.getElementById('c-mins').textContent=mins;
+    document.getElementById('c-secs').textContent=secs;
+  }
+  update();
+  setInterval(update,1000);
+}
+
+// SCROLL REVEAL
+function revealOnScroll(){
+  var els=document.querySelectorAll('.reveal');
+  for(var i=0;i<els.length;i++){
+    var top=els[i].getBoundingClientRect().top;
+    if(top<window.innerHeight*0.88){els[i].classList.add('active');}
+  }
+}
+window.addEventListener('scroll',revealOnScroll);
+
+// PROGRESS BAR
+window.addEventListener('scroll',function(){
+  var h=document.documentElement.scrollHeight-window.innerHeight;
+  var p=h>0?(window.scrollY/h)*100:0;
+  document.getElementById('progress').style.width=p+'%';
+});
+
+// LIGHTBOX
+function openLightbox(el){
+  var img=el.querySelector('img');
+  document.getElementById('lightbox-img').src=img.src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+// FLOATING HEARTS
+function spawnHearts(){
+  function addHeart(){
+    var h=document.createElement('div');
+    h.className='floating-heart';
+    h.innerHTML='&#128156;';
+    h.style.left=Math.random()*100+'%';
+    h.style.bottom='-20px';
+    h.style.fontSize=(Math.random()*1+0.8)+'rem';
+    document.body.appendChild(h);
+    setTimeout(function(){h.remove();},4500);
+  }
+  setInterval(addHeart,3000);
+}
+</script>
+</body>
+</html>
